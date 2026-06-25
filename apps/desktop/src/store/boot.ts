@@ -30,6 +30,16 @@ function clampProgress(value: number) {
 
 export function applyDesktopBootProgress(progress: DesktopBootProgress) {
   const current = $desktopBoot.get()
+
+  // Guard: once boot has completed successfully (no error, progress 100,
+  // not running), ignore further progress updates that don't carry a new
+  // error. This prevents stale IPC responses (e.g. a late getBootProgress
+  // snapshot from before noBackend resolution) from re-activating the
+  // boot overlay after completeDesktopBoot already dismissed it.
+  if (!current.error && current.progress >= 100 && !current.running && !progress.error) {
+    return
+  }
+
   const nextProgress = clampProgress(progress.progress)
   const mergedProgress = progress.running ? Math.max(current.progress, nextProgress) : nextProgress
 
@@ -87,5 +97,20 @@ export function failDesktopBoot(message: string) {
     running: false,
     timestamp: Date.now(),
     visible: true
+  })
+}
+
+// Dismiss the boot failure overlay so the user can access the main app
+// (e.g. Settings → Gateway to configure a remote gateway). Used by the
+// "Configure Remote Gateway" button on the boot failure overlay when the
+// app is running as a remote-only client and no local backend is available.
+export function dismissBootError() {
+  $desktopBoot.set({
+    ...$desktopBoot.get(),
+    error: null,
+    running: false,
+    visible: false,
+    progress: 100,
+    phase: 'renderer.ready'
   })
 }

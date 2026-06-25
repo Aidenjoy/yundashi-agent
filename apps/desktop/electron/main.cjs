@@ -20,12 +20,14 @@ const crypto = require('node:crypto')
 const fs = require('node:fs')
 const http = require('node:http')
 const https = require('node:https')
+// eslint-disable-next-line no-unused-vars
 const net = require('node:net')
 const path = require('node:path')
 const { pathToFileURL } = require('node:url')
 const { execFileSync, spawn } = require('node:child_process')
 const { detectRemoteDisplay, isWindowsBinaryPathInWsl, isWslEnvironment } = require('./bootstrap-platform.cjs')
-const { runBootstrap } = require('./bootstrap-runner.cjs')
+// bootstrap-runner 已禁用:本客户端为纯远程 gateway 模式,不需要安装本地 hermes
+// const { runBootstrap } = require('./bootstrap-runner.cjs')
 const {
   buildSessionWindowUrl,
   chatWindowWebPreferences,
@@ -241,7 +243,7 @@ if (INSTALL_STAMP) {
   )
 }
 
-// HERMES_HOME — the user-facing root for everything Hermes-related. Mirrors
+// HERMES_HOME — the user-facing root for everything Yundashi Agent-related. Mirrors
 // scripts/install.ps1's $HermesHome and scripts/install.sh's $HERMES_HOME.
 //
 // Defaults:
@@ -298,7 +300,7 @@ function pathWithHermesManagedNode(...entries) {
     .join(path.delimiter)
 }
 
-// ACTIVE_HERMES_ROOT — the canonical mutable Hermes install. Same path
+// ACTIVE_HERMES_ROOT — the canonical mutable Yundashi Agent install. Same path
 // install.ps1 / install.sh use, so a desktop-only user and a CLI-only user end
 // up with identical layouts and can share one install.
 const ACTIVE_HERMES_ROOT = path.join(HERMES_HOME, 'hermes-agent')
@@ -320,7 +322,7 @@ const BOOTSTRAP_MARKER_SCHEMA_VERSION = 1
 
 const DESKTOP_CONNECTION_CONFIG_PATH = path.join(app.getPath('userData'), 'connection.json')
 const DESKTOP_UPDATE_CONFIG_PATH = path.join(app.getPath('userData'), 'updates.json')
-// active-profile.json records which Hermes profile the desktop launches its
+// active-profile.json records which Yundashi Agent profile the desktop launches its
 // local backend as. When set, startHermes() passes `hermes --profile <name>
 // dashboard …`, which deterministically pins HERMES_HOME (see
 // _apply_profile_override in hermes_cli/main.py) and bypasses the sticky
@@ -365,7 +367,7 @@ const BOOT_FAKE_STEP_MS = (() => {
   if (!Number.isFinite(raw) || raw <= 0) return 650
   return Math.max(120, raw)
 })()
-const APP_NAME = 'Hermes'
+const APP_NAME = 'Yundashi Agent'
 const TITLEBAR_HEIGHT = 34
 const MACOS_TRAFFIC_LIGHTS_HEIGHT = 14
 const WINDOW_BUTTON_POSITION = {
@@ -630,14 +632,14 @@ app.setName(APP_NAME)
 if (IS_WINDOWS) {
   app.setAppUserModelId('com.nousresearch.hermes')
 }
-// Seed the native About panel with the live Hermes version. This is refreshed
+// Seed the native About panel with the live Yundashi Agent version. This is refreshed
 // on every open via the explicit "About" menu handler (refreshAboutPanel), so
 // an in-place `hermes update` mid-session is reflected without an app restart;
 // the seed here just covers the first open and any non-menu invocation path.
 app.setAboutPanelOptions({
   applicationName: APP_NAME,
   applicationVersion: resolveHermesVersion(),
-  copyright: 'Copyright © 2026 Nous Research'
+  copyright: 'Copyright © 2026 云大师'
 })
 
 // Custom scheme for streaming local media (video/audio) into the renderer.
@@ -749,7 +751,7 @@ let nativeThemeListenerInstalled = false
 let bootProgressState = {
   error: null,
   fakeMode: BOOT_FAKE_MODE,
-  message: 'Waiting to start Hermes backend',
+  message: 'Waiting to start Yundashi Agent backend',
   phase: 'idle',
   progress: 0,
   running: false,
@@ -1057,6 +1059,7 @@ let bootstrapState = {
   unsupportedPlatform: null
 }
 
+// eslint-disable-next-line no-unused-vars
 function broadcastBootstrapEvent(ev) {
   if (ev.type === 'manifest') {
     bootstrapState.manifest = ev
@@ -1196,7 +1199,7 @@ async function waitForUpdateToFinish() {
   while (marker && Date.now() < deadline) {
     await advanceBootProgress(
       'backend.update-wait',
-      'An update is finishing — Hermes will start automatically when it completes…',
+      'An update is finishing — Yundashi Agent will start automatically when it completes…',
       12
     )
     await new Promise(r => setTimeout(r, UPDATE_WAIT_POLL_MS))
@@ -1322,7 +1325,7 @@ function findSystemPython() {
   //      miss real Python 3.13 installs (user-reported case).
   //
   // We also restrict ourselves to Python 3.11–3.13. 3.14 is the latest
-  // CPython but several Hermes deps (notably pywinpty's Rust-built
+  // CPython but several Yundashi Agent deps (notably pywinpty's Rust-built
   // windows_x86_64_msvc crate) don't yet publish 3.14 wheels, and
   // `pip install -e .` falls back to source-build, which fails without
   // a Rust toolchain. install.ps1 sidesteps this by pinning to 3.11
@@ -1420,7 +1423,7 @@ function findSystemPython() {
   return null
 }
 
-// findGitBash — locate bash.exe on Windows. Hermes' terminal tool requires
+// findGitBash — locate bash.exe on Windows. Yundashi Agent' terminal tool requires
 // bash (POSIX shell), and on Windows that's almost always Git for Windows'
 // bundled Git Bash. We check the same set of locations tools/environments/
 // local.py:_find_bash() checks at runtime, so a positive result here means
@@ -1605,6 +1608,7 @@ async function resolveHealedBranch(updateRoot, branch) {
   return 'main'
 }
 
+// eslint-disable-next-line no-unused-vars
 async function checkUpdates() {
   const updateRoot = resolveUpdateRoot()
   let { branch } = readDesktopUpdateConfig()
@@ -1923,7 +1927,7 @@ async function applyUpdates(opts = {}) {
 
     emitUpdateProgress({
       stage: 'restart',
-      message: 'Updating Hermes — this window will close and the updater will open. Don’t reopen Hermes yourself; it restarts automatically when the update finishes.',
+      message: 'Updating Yundashi Agent — this window will close and the updater will open. Don’t reopen Yundashi Agent yourself; it restarts automatically when the update finishes.',
       percent: 100
     })
     repairMacUpdaterHelper(updater)
@@ -1976,6 +1980,7 @@ async function applyUpdates(opts = {}) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 async function handOffWindowsBootstrapRecovery(reason) {
   if (!IS_WINDOWS || !IS_PACKAGED) return false
 
@@ -2081,7 +2086,7 @@ async function applyUpdatesPosixInApp() {
     return { ok: true, manual: true, command: 'hermes update', hermesRoot: updateRoot }
   }
 
-  // Put the Hermes-managed Node and the venv on PATH so `hermes desktop`'s
+  // Put the Yundashi Agent-managed Node and the venv on PATH so `hermes desktop`'s
   // npm build can find them on a machine with no system Node. Windows portable
   // Node lives directly under %LOCALAPPDATA%\hermes\node, not node\bin.
   const env = {
@@ -2126,7 +2131,7 @@ async function applyUpdatesPosixInApp() {
     // best effort
   }
 
-  emitUpdateProgress({ stage: 'update', message: 'Updating Hermes (git + dependencies)…', percent: 10 })
+  emitUpdateProgress({ stage: 'update', message: 'Updating Yundashi Agent (git + dependencies)…', percent: 10 })
   const updated = await runStreamedUpdate(hermes, ['update', '--yes', ...branchArgs], {
     cwd: updateRoot,
     env,
@@ -2150,7 +2155,7 @@ async function applyUpdatesPosixInApp() {
   if (rebuilt.code !== 0) {
     emitUpdateProgress({
       stage: 'error',
-      message: 'Backend updated, but the desktop rebuild failed. Restart Hermes to retry.',
+      message: 'Backend updated, but the desktop rebuild failed. Restart Yundashi Agent to retry.',
       error: rebuilt.error || 'rebuild-failed'
     })
     return { ok: false, backendUpdated: true, error: 'desktop rebuild failed' }
@@ -2194,7 +2199,7 @@ async function applyUpdatesPosixInApp() {
     const outcome = decideRelaunchOutcome({ underUnpacked, sandboxOk })
 
     if (outcome === 'relaunch') {
-      emitUpdateProgress({ stage: 'restart', message: 'Restarting Hermes…', percent: 100 })
+      emitUpdateProgress({ stage: 'restart', message: 'Restarting Yundashi Agent…', percent: 100 })
       // Preserve launch context across the re-exec: replay the original args
       // (filtered of Electron internals) and the env/cwd that define which
       // backend/profile/root this instance talks to. Without this the
@@ -2226,7 +2231,7 @@ async function applyUpdatesPosixInApp() {
           backendUpdated: true,
           guiUpdated: false,
           manualRestart: true,
-          message: 'Backend updated. Quit and reopen Hermes to load the new version.'
+          message: 'Backend updated. Quit and reopen Yundashi Agent to load the new version.'
         }
       }
     }
@@ -2236,7 +2241,7 @@ async function applyUpdatesPosixInApp() {
         stage: 'guiSkew',
         message:
           'Backend updated, but the desktop app package was not changed. ' +
-          'Update or reinstall the Hermes desktop app to match.',
+          'Update or reinstall the Yundashi Agent desktop app to match.',
         percent: 100
       })
       rememberLog(
@@ -2260,13 +2265,13 @@ async function applyUpdatesPosixInApp() {
       sandboxBlocked: true,
       message:
         'Backend updated. The rebuilt app can’t relaunch automatically ' +
-        '(sandbox helper needs root). Quit and reopen Hermes to finish.'
+        '(sandbox helper needs root). Quit and reopen Yundashi Agent to finish.'
     }
   }
 
   const rebuiltApp = [
-    path.join(updateRoot, 'apps', 'desktop', 'release', 'mac-arm64', 'Hermes.app'),
-    path.join(updateRoot, 'apps', 'desktop', 'release', 'mac', 'Hermes.app')
+    path.join(updateRoot, 'apps', 'desktop', 'release', 'mac-arm64', 'Yundashi Agent.app'),
+    path.join(updateRoot, 'apps', 'desktop', 'release', 'mac', 'Yundashi Agent.app')
   ].find(directoryExists)
   const targetApp = runningAppBundle()
 
@@ -2275,7 +2280,7 @@ async function applyUpdatesPosixInApp() {
   if (!rebuiltApp || !targetApp) {
     emitUpdateProgress({
       stage: 'done',
-      message: 'Backend updated. Restart Hermes to load the new version.',
+      message: 'Backend updated. Restart Yundashi Agent to load the new version.',
       percent: 100
     })
     return { ok: true, backendUpdated: true, rebuiltApp: rebuiltApp || null }
@@ -2311,7 +2316,7 @@ fi
   } catch (err) {
     emitUpdateProgress({
       stage: 'done',
-      message: 'Backend + app updated. Restart Hermes to load the new version.',
+      message: 'Backend + app updated. Restart Yundashi Agent to load the new version.',
       percent: 100
     })
     rememberLog(`[updates] could not write swap script: ${err.message}; rebuilt app at ${rebuiltApp}`)
@@ -2367,6 +2372,7 @@ function isBootstrapComplete() {
   return isHermesSourceRoot(ACTIVE_HERMES_ROOT) && fileExists(getVenvPython(VENV_ROOT))
 }
 
+// eslint-disable-next-line no-unused-vars
 function writeBootstrapMarker(payload) {
   fs.mkdirSync(path.dirname(BOOTSTRAP_COMPLETE_MARKER), { recursive: true })
   const merged = {
@@ -2436,7 +2442,7 @@ function isPackagedInstallPath(dir) {
 
 function resolveHermesCwd() {
   // In a packaged build, `process.cwd()` resolves to the install root (e.g.
-  // `…/win-unpacked` on Windows or `/Applications/Hermes.app/Contents/...`
+  // `…/win-unpacked` on Windows or `/Applications/Yundashi Agent.app/Contents/...`
   // on macOS). Sessions spawned there leave files inside the app bundle
   // and bewilder users when "where did my files go?" is the install dir.
   // The user-configurable default project directory wins over everything,
@@ -2556,7 +2562,7 @@ function createActiveBackend(dashboardArgs) {
 
   return {
     kind: 'python',
-    label: `Hermes at ${ACTIVE_HERMES_ROOT}`,
+    label: `Yundashi Agent at ${ACTIVE_HERMES_ROOT}`,
     command: fileExists(venvPython) ? venvPython : findSystemPython(),
     args: ['-m', 'hermes_cli.main', ...dashboardArgs],
     env: buildDesktopBackendEnv({
@@ -2575,7 +2581,7 @@ function resolveHermesBackend(dashboardArgs) {
   //    checkout. Honour it as-is (no bootstrap; the user is driving).
   const overrideRoot = process.env.HERMES_DESKTOP_HERMES_ROOT && path.resolve(process.env.HERMES_DESKTOP_HERMES_ROOT)
   if (overrideRoot && isHermesSourceRoot(overrideRoot)) {
-    const backend = createPythonBackend(overrideRoot, `Hermes source at ${overrideRoot}`, dashboardArgs)
+    const backend = createPythonBackend(overrideRoot, `Yundashi Agent source at ${overrideRoot}`, dashboardArgs)
     if (backend) return backend
   }
 
@@ -2584,7 +2590,7 @@ function resolveHermesBackend(dashboardArgs) {
   //    installed `hermes` on PATH so local Python edits are actually exercised.
   //    (In dev with no checkout, SOURCE_REPO_ROOT won't pass isHermesSourceRoot.)
   if (!IS_PACKAGED && isHermesSourceRoot(SOURCE_REPO_ROOT)) {
-    const backend = createPythonBackend(SOURCE_REPO_ROOT, `Hermes source at ${SOURCE_REPO_ROOT}`, dashboardArgs)
+    const backend = createPythonBackend(SOURCE_REPO_ROOT, `Yundashi Agent source at ${SOURCE_REPO_ROOT}`, dashboardArgs)
     if (backend) return backend
   }
 
@@ -2614,7 +2620,7 @@ function resolveHermesBackend(dashboardArgs) {
       } else if (!isWindowsBinaryPathInWsl(hermesOverride, { isWsl: IS_WSL })) {
         hermesCommand = hermesOverride
       } else {
-        rememberLog(`Ignoring Windows Hermes override under WSL: ${hermesOverride}`)
+        rememberLog(`Ignoring Windows Yundashi Agent override under WSL: ${hermesOverride}`)
       }
     } else {
       hermesCommand = findOnPath('hermes')
@@ -2622,7 +2628,7 @@ function resolveHermesBackend(dashboardArgs) {
 
     if (hermesCommand) {
       if (looksLikeDesktopAppBinary(hermesCommand)) {
-        rememberLog(`Ignoring desktop app executable on PATH while resolving Hermes CLI: ${hermesCommand}`)
+        rememberLog(`Ignoring desktop app executable on PATH while resolving Yundashi Agent CLI: ${hermesCommand}`)
         hermesCommand = null
       }
     }
@@ -2638,7 +2644,7 @@ function resolveHermesBackend(dashboardArgs) {
       const shellForProbe = isCommandScript(hermesCommand)
       if (verifyHermesCli(hermesCommand, { shell: shellForProbe })) {
         return {
-          label: `existing Hermes CLI at ${hermesCommand}`,
+          label: `existing Yundashi Agent CLI at ${hermesCommand}`,
           command: hermesCommand,
           args: dashboardArgs,
           bootstrap: false,
@@ -2648,7 +2654,7 @@ function resolveHermesBackend(dashboardArgs) {
         }
       }
       rememberLog(
-        `Ignoring existing Hermes CLI at ${hermesCommand}: --version probe failed; falling through to bootstrap.`
+        `Ignoring existing Yundashi Agent CLI at ${hermesCommand}: --version probe failed; falling through to bootstrap.`
       )
     }
   }
@@ -2692,7 +2698,7 @@ function resolveHermesBackend(dashboardArgs) {
   //    is a recoverable state the GUI can drive through.
   return {
     kind: 'bootstrap-needed',
-    label: 'Hermes Agent not installed yet; bootstrap required',
+    label: 'Yundashi Agent not installed yet; bootstrap required',
     command: null,
     args: dashboardArgs,
     bootstrap: true,
@@ -2722,89 +2728,17 @@ async function ensureRuntime(backend) {
   // will rewire startup to spawn the window first and route bootstrap events
   // to a renderer-side install overlay.
   if (backend.kind === 'bootstrap-needed') {
-    rememberLog('[bootstrap] no Hermes install found; starting first-launch bootstrap')
-
-    if (await handOffWindowsBootstrapRecovery('bootstrap-needed')) {
-      const handoffError = new Error('Hermes recovery was handed off to Hermes Setup. The desktop will restart when recovery completes.')
-      handoffError.isBootstrapFailure = true
-      handoffError.bootstrapHandedOff = true
-      bootstrapFailure = handoffError
-      throw handoffError
-    }
-
-    // Eagerly flip the bootstrap UI state to 'active' so the renderer
-    // shows the install overlay BEFORE the runner finishes fetching the
-    // manifest (which on slow networks can take tens of seconds and would
-    // otherwise leave the user staring at the generic 'Preparing' splash).
-    // We emit a synthetic manifest with an empty stages list -- the real
-    // manifest event will overwrite it once install.ps1 -Manifest returns.
-    try {
-      broadcastBootstrapEvent({
-        type: 'manifest',
-        stages: [],
-        protocolVersion: null
-      })
-    } catch {
-      void 0
-    }
-
-    bootstrapAbortController = new AbortController()
-
-    const bootstrapResult = await runBootstrap({
-      installStamp: backend.installStamp,
-      activeRoot: backend.activeRoot,
-      sourceRepoRoot: SOURCE_REPO_ROOT,
-      hermesHome: HERMES_HOME,
-      logRoot: path.join(HERMES_HOME, 'logs'),
-      abortSignal: bootstrapAbortController.signal,
-      onEvent: ev => {
-        // Tee every bootstrap event to (a) the desktop log for forensics
-        // and (b) the renderer for live progress UI. Either may be absent;
-        // tolerate both gracefully so a renderer crash doesn't stall the
-        // bootstrap and a log-write failure doesn't suppress the UI signal.
-        try {
-          rememberLog(`[bootstrap] ${JSON.stringify(ev)}`)
-        } catch {
-          void 0
-        }
-        try {
-          broadcastBootstrapEvent(ev)
-        } catch {
-          void 0
-        }
-      },
-      writeMarker: writeBootstrapMarker
-    })
-
-    bootstrapAbortController = null
-
-    if (bootstrapResult.cancelled) {
-      const cancelledError = new Error('Hermes install was cancelled.')
-      cancelledError.isBootstrapFailure = true
-      cancelledError.bootstrapCancelled = true
-      bootstrapFailure = cancelledError
-      throw cancelledError
-    }
-
-    if (!bootstrapResult.ok) {
-      const bootstrapError = new Error(
-        `Hermes bootstrap failed${bootstrapResult.failedStage ? ` at stage '${bootstrapResult.failedStage}'` : ''}: ` +
-          `${bootstrapResult.error || 'unknown error'}. ` +
-          `Check ${path.join(HERMES_HOME, 'logs', 'desktop.log')} for the full transcript.`
-      )
-      bootstrapError.isBootstrapFailure = true
-      bootstrapError.failedStage = bootstrapResult.failedStage || null
-      // Latch the failure so subsequent startHermes() calls return this
-      // same error without re-running install.ps1.  Cleared by the
-      // hermes:bootstrap:reset IPC (renderer's "Reload and retry").
-      bootstrapFailure = bootstrapError
-      throw bootstrapError
-    }
-
-    rememberLog('[bootstrap] bootstrap complete; marker written. Re-resolving backend.')
-    // Re-resolve now that the install exists. The new resolution lands in
-    // step 3 (bootstrap-complete marker) and we recurse to wire venvPython.
-    return ensureRuntime(resolveHermesBackend(backend.args))
+    // === 本地后端安装引导已禁用 ===
+    // 本客户端为纯远程 gateway 模式,不需要安装本地 hermes 后端。
+    // 抛出错误让 BootFailureOverlay 显示,用户可点击"配置远程网关"
+    // 按钮进入设置页连接远程 gateway。
+    rememberLog('[bootstrap] no local backend found; skipping bootstrap installer (remote-only client mode)')
+    const noBackendError = new Error(
+      'No local backend found. Configure a remote gateway in Settings → Gateway to connect.'
+    )
+    noBackendError.isBootstrapFailure = true
+    bootstrapFailure = noBackendError
+    throw noBackendError
   }
 
   // bootstrap=true with a real backend (createActiveBackend path) means we
@@ -2815,12 +2749,12 @@ async function ensureRuntime(backend) {
   // attests they ran successfully).
   if (!isHermesSourceRoot(ACTIVE_HERMES_ROOT)) {
     throw new Error(
-      `Hermes install at ${ACTIVE_HERMES_ROOT} is missing or incomplete. ` +
+      `Yundashi Agent install at ${ACTIVE_HERMES_ROOT} is missing or incomplete. ` +
         'Reinstall via the desktop installer or scripts/install.ps1.'
     )
   }
 
-  // On Windows, preflight Git Bash. Hermes' terminal tool calls bash.exe
+  // On Windows, preflight Git Bash. Yundashi Agent' terminal tool calls bash.exe
   // directly (tools/environments/local.py); without it the agent can't run
   // terminal commands. install.ps1's Stage-Git puts PortableGit at
   // %LOCALAPPDATA%\hermes\git\, which findGitBash() picks up, so for any
@@ -2828,10 +2762,10 @@ async function ensureRuntime(backend) {
   // here via an external `hermes` on PATH, this check still helps.
   if (IS_WINDOWS && !findGitBash()) {
     throw new Error(
-      'Git for Windows is required for Hermes on Windows (provides Git Bash, ' +
+      'Git for Windows is required for Yundashi Agent on Windows (provides Git Bash, ' +
         "which the agent's terminal tool uses). Install it from " +
         'https://git-scm.com/download/win or run `winget install -e --id Git.Git`, ' +
-        'then relaunch Hermes.'
+        'then relaunch Yundashi Agent.'
     )
   }
 
@@ -2845,15 +2779,15 @@ async function ensureRuntime(backend) {
     // install.ps1 succeeds. If we hit this, the user (or a deleted venv)
     // broke the invariant; tell them to re-run the install.
     throw new Error(
-      `Hermes venv missing at ${VENV_ROOT}. Re-run the desktop installer or ` + '`scripts/install.ps1` to rebuild it.'
+      `Yundashi Agent venv missing at ${VENV_ROOT}. Re-run the desktop installer or ` + '`scripts/install.ps1` to rebuild it.'
     )
   }
 
   backend.command = venvPython
-  backend.label = `Hermes at ${ACTIVE_HERMES_ROOT} (venv: ${VENV_ROOT})`
+  backend.label = `Yundashi Agent at ${ACTIVE_HERMES_ROOT} (venv: ${VENV_ROOT})`
   updateBootProgress({
     phase: 'runtime.ready',
-    message: 'Hermes runtime is ready',
+    message: 'Yundashi Agent runtime is ready',
     progress: 82,
     running: true,
     error: null
@@ -2870,7 +2804,7 @@ function fetchJson(url, token, options = {}) {
     const timeoutMs = resolveTimeoutMs(options.timeoutMs, DEFAULT_FETCH_TIMEOUT_MS)
 
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      reject(new Error(`Unsupported Hermes backend URL protocol: ${parsed.protocol}`))
+      reject(new Error(`Unsupported Yundashi Agent backend URL protocol: ${parsed.protocol}`))
       return
     }
 
@@ -2908,7 +2842,7 @@ function fetchJson(url, token, options = {}) {
             reject(
               new Error(
                 `Expected JSON from ${url} but got HTML (status ${res.statusCode}). ` +
-                  'The endpoint is likely missing on the Hermes backend.'
+                  'The endpoint is likely missing on the Yundashi Agent backend.'
               )
             )
             return
@@ -2924,7 +2858,7 @@ function fetchJson(url, token, options = {}) {
 
     req.on('error', reject)
     req.setTimeout(timeoutMs, () => {
-      req.destroy(new Error(`Timed out connecting to Hermes backend after ${timeoutMs}ms`))
+      req.destroy(new Error(`Timed out connecting to Yundashi Agent backend after ${timeoutMs}ms`))
     })
     if (body) req.write(body)
     req.end()
@@ -2950,7 +2884,7 @@ function fetchPublicJson(url, options = {}) {
     const timeoutMs = resolveTimeoutMs(options.timeoutMs, DEFAULT_FETCH_TIMEOUT_MS)
 
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      reject(new Error(`Unsupported Hermes backend URL protocol: ${parsed.protocol}`))
+      reject(new Error(`Unsupported Yundashi Agent backend URL protocol: ${parsed.protocol}`))
       return
     }
 
@@ -2982,7 +2916,7 @@ function fetchPublicJson(url, options = {}) {
             reject(
               new Error(
                 `Expected JSON from ${url} but got HTML (status ${res.statusCode}). ` +
-                  'The endpoint is likely missing on the Hermes backend.'
+                  'The endpoint is likely missing on the Yundashi Agent backend.'
               )
             )
             return
@@ -2998,7 +2932,7 @@ function fetchPublicJson(url, options = {}) {
 
     req.on('error', reject)
     req.setTimeout(timeoutMs, () => {
-      req.destroy(new Error(`Timed out connecting to Hermes backend after ${timeoutMs}ms`))
+      req.destroy(new Error(`Timed out connecting to Yundashi Agent backend after ${timeoutMs}ms`))
     })
     if (body) req.write(body)
     req.end()
@@ -3511,7 +3445,7 @@ async function waitForHermes(baseUrl, token) {
     }
   }
 
-  throw new Error(`Hermes backend did not become ready: ${lastError?.message || 'timeout'}`)
+  throw new Error(`Yundashi Agent backend did not become ready: ${lastError?.message || 'timeout'}`)
 }
 
 function getWindowButtonPosition() {
@@ -3551,7 +3485,7 @@ function sendClosePreviewRequested() {
 
 // Tell the renderer the machine just woke. Sleep silently drops the
 // renderer's WebSocket to the local backend; the renderer reconnects on this
-// signal so the chat composer doesn't stay stuck on "Starting Hermes...".
+// signal so the chat composer doesn't stay stuck on "Starting Yundashi Agent...".
 function sendPowerResume() {
   if (!mainWindow || mainWindow.isDestroyed()) return
   const { webContents } = mainWindow
@@ -3957,8 +3891,8 @@ function installMediaPermissions() {
 // ---------------------------------------------------------------------------
 // OAuth remote-gateway auth.
 //
-// Hosted Hermes gateways gate the dashboard behind an OAuth provider (e.g.
-// Nous Research) instead of a static session token. The auth model is
+// Hosted Yundashi Agent gateways gate the dashboard behind an OAuth provider (e.g.
+// 云大师) instead of a static session token. The auth model is
 // fundamentally different from the token path:
 //
 //   * REST is authed by HttpOnly session cookies (``hermes_session_at``),
@@ -4098,7 +4032,7 @@ function openOauthLoginWindow(baseUrl) {
       win = new BrowserWindow({
         width: 520,
         height: 720,
-        title: 'Sign in to Hermes gateway',
+        title: 'Sign in to Yundashi Agent gateway',
         autoHideMenuBar: true,
         webPreferences: {
           contextIsolation: true,
@@ -4153,7 +4087,7 @@ function fetchJsonViaOauthSession(url, options = {}) {
       return
     }
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      reject(new Error(`Unsupported Hermes backend URL protocol: ${parsed.protocol}`))
+      reject(new Error(`Unsupported Yundashi Agent backend URL protocol: ${parsed.protocol}`))
       return
     }
     const body = serializeJsonBody(options.body)
@@ -4176,7 +4110,7 @@ function fetchJsonViaOauthSession(url, options = {}) {
       } catch {
         // already finished
       }
-      reject(new Error(`Timed out connecting to Hermes backend after ${timeoutMs}ms`))
+      reject(new Error(`Timed out connecting to Yundashi Agent backend after ${timeoutMs}ms`))
     }, timeoutMs)
 
     request.on('response', res => {
@@ -4511,7 +4445,7 @@ async function buildRemoteConnection(rawUrl, authMode, token, source) {
     // the authoritative liveness check.
     if (!(await hasLiveOauthSession(baseUrl))) {
       const err = new Error(
-        'Remote Hermes gateway uses OAuth, but you are not signed in. ' +
+        'Remote Yundashi Agent gateway uses OAuth, but you are not signed in. ' +
           'Open Settings → Gateway and click "Sign in", or switch back to Local.'
       )
       err.needsOauthLogin = true
@@ -4543,7 +4477,7 @@ async function buildRemoteConnection(rawUrl, authMode, token, source) {
 
   if (!token) {
     throw new Error(
-      'Remote Hermes gateway is selected, but no session token is saved. ' +
+      'Remote Yundashi Agent gateway is selected, but no session token is saved. ' +
         'Open Settings → Gateway and save a token, or switch back to Local.'
     )
   }
@@ -4584,7 +4518,7 @@ async function resolveRemoteBackend(profile) {
     if (!rawEnvToken) {
       throw new Error(
         'HERMES_DESKTOP_REMOTE_URL is set but HERMES_DESKTOP_REMOTE_TOKEN is not. ' +
-          'Both must be provided to connect to a remote Hermes backend.'
+          'Both must be provided to connect to a remote Yundashi Agent backend.'
       )
     }
     return buildRemoteConnection(rawEnvUrl, 'token', rawEnvToken, 'env')
@@ -4637,7 +4571,7 @@ async function requestJsonForProfile(profile, path, method, body) {
 
 async function probeRemoteAuthMode(rawUrl) {
   // Determine how a remote gateway expects callers to authenticate, WITHOUT
-  // sending any credentials. ``/api/status`` is public on every Hermes
+  // sending any credentials. ``/api/status`` is public on every Yundashi Agent
   // gateway (it backs the portal liveness probe) and reports:
   //   auth_required: true  → OAuth gate is engaged (cookie + ws-ticket auth)
   //   auth_required: false → loopback/--insecure: legacy session-token auth
@@ -4669,7 +4603,7 @@ async function probeRemoteAuthMode(rawUrl) {
 
   if (authRequired) {
     // Best-effort: a gated gateway exposes the registered providers so the
-    // button can read "Sign in with Nous Research" instead of a generic
+    // button can read "Sign in with 云大师" instead of a generic
     // label, and so a username/password provider can be distinguished from
     // an OAuth-redirect one (``supports_password``). A failure here doesn't
     // change the auth mode, so swallow it.
@@ -4734,7 +4668,7 @@ async function testDesktopConnectionConfig(input = {}) {
   // connects — a separate transport with separate server-side guards (Host/
   // Origin, ws-ticket/token auth). Validating only the HTTP side produced a
   // false-positive "reachable" while the real boot still failed with "Could not
-  // connect to Hermes gateway". Mirror the renderer's connect here so the test
+  // connect to Yundashi Agent gateway". Mirror the renderer's connect here so the test
   // reflects the full path the app actually uses.
   const wsUrl = await resolveTestWsUrl(baseUrl, authMode, token, { mintTicket: mintGatewayWsTicket })
   // Skip the WS leg only when the runtime genuinely lacks a WebSocket (so an
@@ -4934,7 +4868,7 @@ async function spawnPoolBackend(profile, entry) {
   const hermesCwd = resolveHermesCwd()
   const webDist = resolveWebDist()
 
-  rememberLog(`Starting Hermes backend for profile "${profile}" via ${backend.label}`)
+  rememberLog(`Starting Yundashi Agent backend for profile "${profile}" via ${backend.label}`)
 
   const child = spawn(
     backend.command,
@@ -4971,16 +4905,16 @@ async function spawnPoolBackend(profile, entry) {
     rejectStart = reject
   })
   child.once('error', error => {
-    rememberLog(`Hermes backend for profile "${profile}" failed to start: ${error.message}`)
+    rememberLog(`Yundashi Agent backend for profile "${profile}" failed to start: ${error.message}`)
     backendPool.delete(profile)
     rejectStart?.(error)
   })
   child.once('exit', (code, signal) => {
-    rememberLog(`Hermes backend for profile "${profile}" exited (${signal || code})`)
+    rememberLog(`Yundashi Agent backend for profile "${profile}" exited (${signal || code})`)
     backendPool.delete(profile)
     if (!ready) {
       rejectStart?.(
-        new Error(`Hermes backend for profile "${profile}" exited before it became ready (${signal || code}).`)
+        new Error(`Yundashi Agent backend for profile "${profile}" exited before it became ready (${signal || code}).`)
       )
     }
   })
@@ -4994,7 +4928,7 @@ async function spawnPoolBackend(profile, entry) {
   ready = true
   const authToken = await adoptServedDashboardToken(baseUrl, token, {
     childAlive: () => child.exitCode === null && !child.killed,
-    label: `Hermes backend for profile "${profile}"`,
+    label: `Yundashi Agent backend for profile "${profile}"`,
     rememberLog
   })
   entry.token = authToken
@@ -5102,16 +5036,16 @@ async function startHermes() {
   if (connectionPromise) return connectionPromise
 
   connectionPromise = (async () => {
-    await advanceBootProgress('backend.resolve', 'Resolving Hermes backend', 8)
+    await advanceBootProgress('backend.resolve', 'Resolving Yundashi Agent backend', 8)
     // Resolve for the desktop's primary profile so a per-profile remote
     // override on the active profile is honored (falls back to env / global).
     const remote = await resolveRemoteBackend(primaryProfileKey())
     if (remote) {
-      await advanceBootProgress('backend.remote', `Connecting to remote Hermes backend at ${remote.baseUrl}`, 24)
+      await advanceBootProgress('backend.remote', `Connecting to remote Yundashi Agent backend at ${remote.baseUrl}`, 24)
       await waitForHermes(remote.baseUrl, remote.token)
       updateBootProgress({
         phase: 'backend.ready',
-        message: 'Remote Hermes backend is ready',
+        message: 'Remote Yundashi Agent backend is ready',
         progress: 94,
         running: true,
         error: null
@@ -5148,13 +5082,46 @@ async function startHermes() {
     if (activeProfile) {
       dashboardArgs.unshift('--profile', activeProfile)
     }
-    await advanceBootProgress('backend.runtime', 'Resolving Hermes runtime', 28)
-    const backend = await ensureRuntime(resolveHermesBackend(dashboardArgs))
+    await advanceBootProgress('backend.runtime', 'Resolving Yundashi Agent runtime', 28)
+    const resolvedBackend = resolveHermesBackend(dashboardArgs)
+
+    // Remote-only client mode: no local backend found and no remote gateway
+    // configured. Instead of triggering the bootstrap installer (which would
+    // install a local hermes the user doesn't want), return a placeholder
+    // connection with noBackend=true. The renderer completes boot without a
+    // gateway connection so the user can access Settings → Gateway to configure
+    // a remote hermes instance.
+    if (resolvedBackend.kind === 'bootstrap-needed') {
+      rememberLog('[startHermes] no local backend found; returning noBackend placeholder (remote-only client mode)')
+      // Mark boot as complete so the renderer's GatewayConnectingOverlay
+      // doesn't latch on. The renderer's boot() will also call
+      // completeDesktopBoot() — both set the same final state.
+      updateBootProgress({
+        phase: 'renderer.ready',
+        message: 'No local backend. Configure a remote gateway in Settings.',
+        progress: 100,
+        running: false,
+        error: null
+      })
+      return {
+        baseUrl: '',
+        mode: 'remote',
+        source: 'pending',
+        authMode: 'token',
+        token: '',
+        wsUrl: '',
+        logs: hermesLog.slice(-80),
+        ...getWindowState(),
+        noBackend: true
+      }
+    }
+
+    const backend = await ensureRuntime(resolvedBackend)
     const hermesCwd = resolveHermesCwd()
     const webDist = resolveWebDist()
 
-    await advanceBootProgress('backend.spawn', `Starting Hermes backend via ${backend.label}`, 84)
-    rememberLog(`Starting Hermes backend via ${backend.label}`)
+    await advanceBootProgress('backend.spawn', `Starting Yundashi Agent backend via ${backend.label}`, 84)
+    rememberLog(`Starting Yundashi Agent backend via ${backend.label}`)
 
     hermesProcess = spawn(
       backend.command,
@@ -5193,11 +5160,11 @@ async function startHermes() {
       rejectBackendStart = reject
     })
     hermesProcess.once('error', error => {
-      rememberLog(`Hermes backend failed to start: ${error.message}`)
+      rememberLog(`Yundashi Agent backend failed to start: ${error.message}`)
       updateBootProgress(
         {
           error: error.message,
-          message: `Hermes backend failed to start: ${error.message}`,
+          message: `Yundashi Agent backend failed to start: ${error.message}`,
           phase: 'backend.error',
           running: false
         },
@@ -5209,12 +5176,12 @@ async function startHermes() {
       rejectBackendStart?.(error)
     })
     hermesProcess.once('exit', (code, signal) => {
-      rememberLog(`Hermes backend exited (${signal || code})`)
+      rememberLog(`Yundashi Agent backend exited (${signal || code})`)
       hermesProcess = null
       connectionPromise = null
       sendBackendExit({ code, signal })
       if (!backendReady) {
-        const message = `Hermes backend exited before it became ready (${signal || code}).`
+        const message = `Yundashi Agent backend exited before it became ready (${signal || code}).`
         updateBootProgress(
           {
             error: message,
@@ -5226,18 +5193,18 @@ async function startHermes() {
         )
         rejectBackendStart?.(
           new Error(
-            `Hermes backend exited before it became ready (${signal || code}). Log: ${DESKTOP_LOG_PATH}\n${recentHermesLog()}`
+            `Yundashi Agent backend exited before it became ready (${signal || code}). Log: ${DESKTOP_LOG_PATH}\n${recentHermesLog()}`
           )
         )
       }
     })
 
-    await advanceBootProgress('backend.port', 'Waiting for Hermes backend to launch', 86)
+    await advanceBootProgress('backend.port', 'Waiting for Yundashi Agent backend to launch', 86)
     // Discover the ephemeral port the child bound to
     const port = await Promise.race([waitForDashboardPort(hermesProcess), backendStartFailed])
 
     const baseUrl = `http://127.0.0.1:${port}`
-    await advanceBootProgress('backend.wait', 'Waiting for Hermes backend to become ready', 90)
+    await advanceBootProgress('backend.wait', 'Waiting for Yundashi Agent backend to become ready', 90)
     await Promise.race([waitForHermes(baseUrl, token), backendStartFailed])
     backendReady = true
     const authToken = await adoptServedDashboardToken(baseUrl, token, {
@@ -5247,7 +5214,7 @@ async function startHermes() {
     })
     updateBootProgress({
       phase: 'backend.ready',
-      message: 'Hermes backend is ready. Finalizing desktop startup',
+      message: 'Yundashi Agent backend is ready. Finalizing desktop startup',
       progress: 94,
       running: true,
       error: null
@@ -5328,7 +5295,7 @@ function spawnSecondaryWindow({ sessionId, watch, newSession } = {}) {
     height: SESSION_WINDOW_MIN_HEIGHT,
     minWidth: SESSION_WINDOW_MIN_WIDTH,
     minHeight: SESSION_WINDOW_MIN_HEIGHT,
-    title: 'Hermes',
+    title: 'Yundashi Agent',
     titleBarStyle: 'hidden',
     titleBarOverlay: getTitleBarOverlayOptions(),
     trafficLightPosition: IS_MAC ? WINDOW_BUTTON_POSITION : undefined,
@@ -5387,7 +5354,7 @@ function createNewSessionWindow() {
 
 // The pet overlay: a single transparent, frameless, always-on-top window that
 // hosts ONLY the floating mascot. Shift-clicking the in-window pet "pops it out"
-// here so it can leave the app's bounds and stay visible while Hermes is
+// here so it can leave the app's bounds and stay visible while Yundashi Agent is
 // minimized (Codex-style task-completion glance). It carries no gateway
 // connection of its own — the main renderer is the single source of truth and
 // pushes pet state over IPC (hermes:pet-overlay:state); the overlay just renders
@@ -5419,7 +5386,7 @@ function spawnPetOverlayWindow(bounds) {
     // taskbar/alt-tab entry. On macOS, cmd-tab is app-level and this can make
     // the whole app look like it vanished when the only newly-created visible
     // window is a frameless overlay. Use NSPanel + Mission Control hiding below
-    // instead, leaving the main Hermes app as the Dock/cmd-tab anchor.
+    // instead, leaving the main Yundashi Agent app as the Dock/cmd-tab anchor.
     skipTaskbar: !IS_MAC,
     hasShadow: false,
     alwaysOnTop: true,
@@ -5429,7 +5396,7 @@ function spawnPetOverlayWindow(bounds) {
     hiddenInMissionControl: IS_MAC,
     // Non-activating: the overlay must never become the app's key/main window,
     // or it (a frameless, taskbar-skipping panel) becomes the app's switcher
-    // anchor and the Hermes icon drops out of cmd/alt-tab — especially when the
+    // anchor and the Yundashi Agent icon drops out of cmd/alt-tab — especially when the
     // main window is minimized. We flip this on only while the composer needs
     // the keyboard (see hermes:pet-overlay:set-focusable).
     focusable: false,
@@ -5457,7 +5424,7 @@ function spawnPetOverlayWindow(bounds) {
   try {
     // Electron docs: macOS may transform process type on each
     // setVisibleOnAllWorkspaces() call unless skipTransformProcessType=true,
-    // which briefly hides the Dock/cmd-tab presence. Keep Hermes in the normal
+    // which briefly hides the Dock/cmd-tab presence. Keep Yundashi Agent in the normal
     // ForegroundApplication class so shift-clicking the pet never drops the app
     // out of app switchers.
     win.setVisibleOnAllWorkspaces(
@@ -5528,7 +5495,7 @@ function createWindow() {
     height: 800,
     minWidth: 400,
     minHeight: 620,
-    title: 'Hermes',
+    title: 'Yundashi Agent',
     // Frameless title bar on every platform so the renderer can paint the
     // "hide sidebar" button (and other left-side titlebar tools) flush with
     // the top edge — matching the macOS layout where the traffic lights sit
@@ -5649,7 +5616,7 @@ ipcMain.handle('hermes:connection', async (_event, profile) => ensureBackend(pro
 // so the 'exit'/'error' handlers that would clear a dead connectionPromise never
 // fire — once the remote becomes unreachable across a sleep/wake the renderer
 // re-dials the same dead descriptor forever and the composer stays stuck on
-// "Starting Hermes…". Before the renderer's backoff loop reconnects, it asks us
+// "Starting Yundashi Agent…". Before the renderer's backoff loop reconnects, it asks us
 // to confirm the cached PRIMARY backend is still reachable; if a remote one is
 // not, we drop the cache so the next getConnection() rebuilds it. Local backends
 // self-heal via their child 'exit' handler, so we never touch them here.
@@ -5679,7 +5646,7 @@ ipcMain.handle('hermes:connection:revalidate', async () => {
     // Unreachable remote: drop the stale cache so the renderer's next reconnect
     // tick rebuilds a fresh, reachable descriptor. resetHermesConnection only
     // nulls connectionPromise for a remote (no child to SIGTERM).
-    rememberLog('Cached remote Hermes backend failed liveness probe; dropping stale connection.')
+    rememberLog('Cached remote Yundashi Agent backend failed liveness probe; dropping stale connection.')
     resetHermesConnection()
     return { ok: true, rebuilt: true }
   }
@@ -6114,7 +6081,7 @@ ipcMain.handle('hermes:notify', (_event, payload) => {
   // and the body click still works.
   const actions = Array.isArray(payload?.actions) ? payload.actions : []
   const notification = new Notification({
-    title: payload?.title || 'Hermes',
+    title: payload?.title || 'Yundashi Agent',
     body: payload?.body || '',
     silent: Boolean(payload?.silent),
     actions: actions.map(action => ({ type: 'button', text: String(action?.text || '') }))
@@ -6481,7 +6448,7 @@ function terminalShellEnv() {
 
   // Strip color/theme-detection vars that ride along when Electron is launched
   // from a non-tty agent shell (Cursor's runner sets NO_COLOR/FORCE_COLOR=0
-  // /TERM=dumb; some terminals set COLORFGBG which would flip Hermes' TUI into
+  // /TERM=dumb; some terminals set COLORFGBG which would flip Yundashi Agent' TUI into
   // light-mode). Our PTY is a real xterm-compat terminal — force truecolor.
   delete env.NO_COLOR
   delete env.FORCE_COLOR
@@ -6531,7 +6498,7 @@ ipcMain.handle('hermes:fs:worktrees', async (_event, cwds) => worktreesForIpc(cw
 
 ipcMain.handle('hermes:terminal:start', async (event, payload = {}) => {
   if (!nodePty) {
-    throw new Error('PTY support is unavailable. Reinstall desktop dependencies and restart Hermes.')
+    throw new Error('PTY support is unavailable. Reinstall desktop dependencies and restart Yundashi Agent.')
   }
 
   ensureSpawnHelperExecutable()
@@ -6597,15 +6564,22 @@ ipcMain.handle('hermes:terminal:resize', (_event, id, size = {}) => {
 })
 ipcMain.handle('hermes:terminal:dispose', (_event, id) => disposeTerminalSession(String(id || '')))
 
-ipcMain.handle('hermes:updates:check', async () =>
-  checkUpdates().catch(error => ({
-    supported: true,
-    branch: readDesktopUpdateConfig().branch,
-    error: 'check-failed',
-    message: error?.message || String(error),
-    fetchedAt: Date.now()
-  }))
-)
+// === 更新检查已禁用:后续添加自定义升级逻辑 ===
+// ipcMain.handle('hermes:updates:check', async () =>
+//   checkUpdates().catch(error => ({
+//     supported: true,
+//     branch: readDesktopUpdateConfig().branch,
+//     error: 'check-failed',
+//     message: error?.message || String(error),
+//     fetchedAt: Date.now()
+//   }))
+// )
+ipcMain.handle('hermes:updates:check', async () => ({
+  supported: false,
+  reason: 'update-disabled',
+  message: 'Update check disabled.',
+  fetchedAt: Date.now()
+}))
 
 ipcMain.handle('hermes:updates:apply', async (_event, payload) =>
   applyUpdates(payload || {}).catch(error => ({
@@ -6623,9 +6597,9 @@ ipcMain.handle('hermes:updates:branch:set', async (_event, name) => {
   return { branch }
 })
 
-// Resolve the canonical Hermes version (the one `release.py` bumps in
+// Resolve the canonical Yundashi Agent version (the one `release.py` bumps in
 // hermes_cli/__init__.py + pyproject.toml) so the desktop About panel shows the
-// real Hermes version instead of the Electron app's own package.json version,
+// real Yundashi Agent version instead of the Electron app's own package.json version,
 // which historically drifted (stuck at 0.0.2). Falls back to app.getVersion()
 // when the source tree can't be read (e.g. a packaged build without the repo).
 function resolveHermesVersion() {
@@ -6645,7 +6619,7 @@ function resolveHermesVersion() {
   return app.getVersion()
 }
 
-// Re-resolve the live Hermes version and push it into the native About panel
+// Re-resolve the live Yundashi Agent version and push it into the native About panel
 // just before showing it, so an in-place `hermes update` is reflected without
 // an app restart. macOS only — `showAboutPanel()` is a no-op elsewhere, and the
 // other platforms don't use this menu item.
@@ -6653,7 +6627,7 @@ function showAboutPanelFresh() {
   app.setAboutPanelOptions({
     applicationName: APP_NAME,
     applicationVersion: resolveHermesVersion(),
-    copyright: 'Copyright © 2026 Nous Research'
+    copyright: 'Copyright © 2026 云大师'
   })
   app.showAboutPanel()
 }
@@ -6762,7 +6736,7 @@ async function runDesktopUninstall(mode) {
     return {
       ok: false,
       error: 'agent-missing',
-      message: `Can't run the uninstaller: no Hermes agent venv at ${VENV_ROOT}.`
+      message: `Can't run the uninstaller: no Yundashi Agent venv at ${VENV_ROOT}.`
     }
   }
 

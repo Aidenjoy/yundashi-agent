@@ -61,6 +61,7 @@ export interface Translations {
     ready: string
     desktopBootFailedWithMessage: (message: string) => string
     steps: {
+      configureGateway: string
       connectingGateway: string
       loadingSettings: string
       loadingSessions: string
@@ -83,6 +84,7 @@ export interface Translations {
       retry: string
       repairInstall: string
       useLocalGateway: string
+      configureRemoteGateway: string
       openLogs: string
       repairHint: string
       remoteSignInHint: string

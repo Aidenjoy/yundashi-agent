@@ -88,7 +88,7 @@ import {
 } from '../store/session'
 import { onSessionsChanged } from '../store/session-sync'
 import { clearSessionTodos, setSessionTodos, todoListActive } from '../store/todos'
-import { openUpdatesWindow, startUpdatePoller, stopUpdatePoller } from '../store/updates'
+import { openUpdatesWindow, stopUpdatePoller } from '../store/updates'  // startUpdatePoller 已禁用:后续添加自定义升级逻辑
 import { isSecondaryWindow } from '../store/windows'
 
 import { ChatView } from './chat'
@@ -273,7 +273,7 @@ export function DesktopController() {
   }, [chatOpen, filePreviewTarget, previewTarget])
 
   useEffect(() => {
-    startUpdatePoller()
+    // startUpdatePoller()  // 更新轮询已禁用:后续添加自定义升级逻辑
     const unsubscribe = window.hermesDesktop?.onOpenUpdatesRequested?.(() => openUpdatesWindow())
 
     return () => {

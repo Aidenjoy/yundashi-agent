@@ -149,6 +149,13 @@ export function GatewayConnectingOverlay() {
     return null
   }
 
+  // Boot completed without a gateway connection (noBackend mode — no local
+  // backend and no remote configured). Exit immediately so the user can
+  // access the main app shell and configure a remote gateway in Settings.
+  if (!boot.running && boot.progress >= 100 && !boot.error && !previewing && gatewayState !== 'open') {
+    return null
+  }
+
   // Real connect: once the fade finishes, get out of the way for good.
   if (phase === 'gone' && !previewing) {
     return null

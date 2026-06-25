@@ -2,9 +2,9 @@ import { useStore } from '@nanostores/react'
 import { useEffect, useState } from 'react'
 
 import { BrandMark } from '@/components/brand-mark'
-import { Button } from '@/components/ui/button'
+// import { Button } from '@/components/ui/button'  // 已禁用:按钮容器已注释
 import { type Translations, useI18n } from '@/i18n'
-import { CheckCircle2, ExternalLink, Loader2, RefreshCw, Sparkles } from '@/lib/icons'
+import { CheckCircle2, RefreshCw, Sparkles } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import {
   $desktopVersion,
@@ -12,15 +12,13 @@ import {
   $updateChecking,
   $updateStatus,
   checkUpdates,
-  openUpdatesWindow,
-  refreshDesktopVersion,
-  startActiveUpdate
+  refreshDesktopVersion
 } from '@/store/updates'
 
 import { ListRow, SectionHeading, SettingsContent } from './primitives'
 import { UninstallSection } from './uninstall-section'
 
-const RELEASE_NOTES_URL = 'https://github.com/NousResearch/hermes-agent/releases'
+// const RELEASE_NOTES_URL = 'https://github.com/NousResearch/hermes-agent/releases'  // 已禁用:后续添加自定义升级逻辑
 
 function relativeTime(ms: number | undefined, a: Translations['settings']['about']) {
   if (!ms) {
@@ -89,7 +87,7 @@ export function AboutSettings() {
   } else if (status) {
     statusLine = a.onLatest
   } else {
-    statusLine = a.tapCheck
+    statusLine = a.onLatest  // 更新检查已禁用,直接显示"最新版本"
   }
 
   return (
@@ -123,13 +121,16 @@ export function AboutSettings() {
             )}
             <div className="min-w-0">
               <p className="font-medium">{statusLine}</p>
+              {/* 上次检查时间已隐藏:更新检查已禁用
               <p className="mt-1 text-xs text-muted-foreground">
                 {a.lastChecked(relativeTime(status?.fetchedAt, a))}
                 {justChecked && !checking ? a.justNowSuffix : ''}
               </p>
+              */}
             </div>
           </div>
 
+          {/* === 更新/发行说明按钮已禁用:后续添加自定义升级逻辑 ===
           <div className="mt-3 flex flex-wrap items-center gap-4">
             <Button
               disabled={checking || applying || !supported}
@@ -167,11 +168,11 @@ export function AboutSettings() {
               </a>
             </Button>
           </div>
+          === */}
         </div>
 
         <ListRow
           description={a.automaticUpdatesDesc}
-          hint={a.branchCommit(status?.branch ?? 'unknown', status?.currentSha?.slice(0, 7) ?? 'unknown')}
           title={a.automaticUpdates}
         />
 

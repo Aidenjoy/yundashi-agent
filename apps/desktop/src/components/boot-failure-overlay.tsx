@@ -1,20 +1,21 @@
 import { useStore } from '@nanostores/react'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { ErrorIcon } from '@/components/ui/error-state'
 import { LogView } from '@/components/ui/log-view'
 import type { DesktopConnectionConfig } from '@/global'
 import { useI18n } from '@/i18n'
-import { FileText, Loader2, LogIn, RefreshCw, Wrench } from '@/lib/icons'
-import { $desktopBoot } from '@/store/boot'
+import { FileText, Globe, Loader2, LogIn, RefreshCw, Wrench } from '@/lib/icons'
+import { $desktopBoot, dismissBootError } from '@/store/boot'
 import { notify, notifyError } from '@/store/notifications'
 import { $desktopOnboarding } from '@/store/onboarding'
 
 import type { RemoteReauth } from './boot-failure-reauth'
 import { deriveProviderShape, isRemoteReauthFailure, signInLabel } from './boot-failure-reauth'
 
-type BusyAction = 'local' | 'repair' | 'retry' | 'signin' | null
+type BusyAction = 'gateway' | 'local' | 'repair' | 'retry' | 'signin' | null
 
 // A remote gateway whose access cookie has lapsed (e.g. the dashboard
 // restarted on the remote box) boots into this overlay with a reauth-shaped
@@ -31,6 +32,7 @@ export function BootFailureOverlay() {
   const boot = useStore($desktopBoot)
   const onboarding = useStore($desktopOnboarding)
   const { t } = useI18n()
+  const navigate = useNavigate()
   const [busy, setBusy] = useState<BusyAction>(null)
   const [logs, setLogs] = useState<string[]>([])
   const [showLogs, setShowLogs] = useState(false)
@@ -129,6 +131,16 @@ export function BootFailureOverlay() {
     setBusy(null)
   }
 
+  // Dismiss the boot failure overlay and open Settings → Gateway so the user
+  // can configure a remote gateway connection. Used when no local backend is
+  // available and the user wants to connect to a remote hermes instance.
+  const configureRemoteGateway = () => {
+    setBusy('gateway')
+    dismissBootError()
+    navigate('/settings?tab=gateway')
+    setBusy(null)
+  }
+
   // Open the gateway's login window (renders the username/password form for a
   // basic gateway, or the OAuth redirect otherwise — the desktop drives both
   // through the same window). On a successful sign-in the session cookie is
@@ -215,6 +227,12 @@ export function BootFailureOverlay() {
                 {busy === 'local' ? <Loader2 className="animate-spin" /> : null}
                 {copy.useLocalGateway}
               </Button>
+              {!remoteReauth ? (
+                <Button disabled={Boolean(busy)} onClick={() => configureRemoteGateway()} variant="secondary">
+                  {busy === 'gateway' ? <Loader2 className="animate-spin" /> : <Globe />}
+                  {t.boot.failure.configureRemoteGateway}
+                </Button>
+              ) : null}
               <Button onClick={openLogs} variant="ghost">
                 <FileText />
                 {copy.openLogs}

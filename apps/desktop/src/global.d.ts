@@ -305,7 +305,7 @@ export interface HermesConnection {
   mode?: 'local' | 'remote'
   authMode?: 'oauth' | 'token'
   nativeOverlayWidth: number
-  source?: 'env' | 'local' | 'settings'
+  source?: 'env' | 'local' | 'settings' | 'pending'
   token: string
   wsUrl: string
   logs: string[]
@@ -313,6 +313,10 @@ export interface HermesConnection {
   // connection belongs to.
   profile?: string
   windowButtonPosition: { x: number; y: number } | null
+  // Remote-only client mode: no local backend found and no remote gateway
+  // configured yet. The renderer skips gateway connection and completes boot
+  // so the user can access Settings → Gateway.
+  noBackend?: boolean
 }
 
 export interface HermesTitleBarTheme {

@@ -125,9 +125,11 @@ function readCachedSkipped(): boolean {
   }
 
   try {
-    return window.localStorage.getItem(SKIP_CACHE_KEY) === '1'
+    const val = window.localStorage.getItem(SKIP_CACHE_KEY)
+    // 首次启动无缓存,默认跳过引导页(等同于点击 "I'll choose a provider later")
+    return val === null ? true : val === '1'
   } catch {
-    return false
+    return true
   }
 }
 
@@ -189,7 +191,7 @@ async function checkRuntime(ctx: OnboardingContext): Promise<RuntimeReadinessRes
 }
 
 function notifyReady(provider: string) {
-  notify({ kind: 'success', title: 'Hermes is ready', message: `${provider} connected.` })
+  notify({ kind: 'success', title: 'Yundashi Agent is ready', message: `${provider} connected.` })
 }
 
 // Human-friendly labels for tools auto-routed through the Nous Tool Gateway,
@@ -360,8 +362,8 @@ function providerResolutionFailure(reason: null | string) {
   const detail = reason?.trim()
 
   return detail
-    ? `Connected, but Hermes still cannot resolve a usable provider. ${detail}`
-    : 'Connected, but Hermes still cannot resolve a usable provider.'
+    ? `Connected, but Yundashi Agent still cannot resolve a usable provider. ${detail}`
+    : 'Connected, but Yundashi Agent still cannot resolve a usable provider.'
 }
 
 async function refreshProviders() {
@@ -722,7 +724,7 @@ export async function recheckExternalSignin(ctx: OnboardingContext) {
       provider,
       message:
         reason?.trim() ||
-        `Hermes still cannot reach ${provider.name}. Run \`${provider.cli_command}\` in a terminal first.`
+        `Yundashi Agent still cannot reach ${provider.name}. Run \`${provider.cli_command}\` in a terminal first.`
     })
   )
 }
@@ -837,7 +839,7 @@ export async function saveOnboardingLocalEndpoint(baseUrl: string, apiKey: strin
     if (!runtime.ready) {
       const detail = (runtime.reason ?? '').trim()
 
-      return { ok: false, message: detail || `Saved, but Hermes still cannot reach ${url}.` }
+      return { ok: false, message: detail || `Saved, but Yundashi Agent still cannot reach ${url}.` }
     }
 
     notifyReady('Local / custom endpoint')
