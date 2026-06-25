@@ -40,6 +40,14 @@ const STAGE_ROOT = path.join(APP_ROOT, 'build', 'native-deps')
 const TARGET_ARCH = process.env.npm_config_arch || process.arch
 const TARGET_PLATFORM = process.platform
 
+// When building for macOS, we always stage prebuilds for BOTH x64 and arm64
+// so the resulting app runs natively on both Intel and Apple Silicon Macs.
+// For other platforms, we only stage the target architecture.
+const STAGE_ARCHES =
+  TARGET_PLATFORM === 'darwin'
+    ? ['x64', 'arm64']
+    : [TARGET_ARCH]
+
 // Modules to stage. The "from" path is the hoisted location in the workspace
 // root; "to" is the layout we want inside build/native-deps/.  The "include"
 // globs (relative to "from") select the runtime-essential files.  Anything
@@ -57,11 +65,15 @@ const NATIVE_DEPS = [
       // ~25 MB of .pdb debug symbols that prebuild-install bundles for
       // Windows crash analysis -- not used at runtime, would just bloat
       // the installer.
-      `prebuilds/${TARGET_PLATFORM}-${TARGET_ARCH}/*.node`,
-      `prebuilds/${TARGET_PLATFORM}-${TARGET_ARCH}/*.dll`,
-      `prebuilds/${TARGET_PLATFORM}-${TARGET_ARCH}/*.exe`,
-      `prebuilds/${TARGET_PLATFORM}-${TARGET_ARCH}/spawn-helper`,
-      `prebuilds/${TARGET_PLATFORM}-${TARGET_ARCH}/conpty/*`
+      // On macOS we collect prebuilds for both x64 and arm64 so the same
+      // app bundle runs natively on Intel and Apple Silicon.
+      ...[].concat(...STAGE_ARCHES.map(arch => [
+        `prebuilds/${TARGET_PLATFORM}-${arch}/*.node`,
+        `prebuilds/${TARGET_PLATFORM}-${arch}/*.dll`,
+        `prebuilds/${TARGET_PLATFORM}-${arch}/*.exe`,
+        `prebuilds/${TARGET_PLATFORM}-${arch}/spawn-helper`,
+        `prebuilds/${TARGET_PLATFORM}-${arch}/conpty/*`
+      ]))
     ]
   }
 ]
