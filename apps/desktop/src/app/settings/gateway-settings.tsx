@@ -147,7 +147,9 @@ export function GatewaySettings() {
 
         setState(config)
       })
-      .catch(err => notifyError(err, g.failedLoad))
+      .catch(() => {
+        // noBackend mode: silently ignore when no local backend is available
+      })
       .finally(() => {
         if (!cancelled) {
           setLoading(false)
